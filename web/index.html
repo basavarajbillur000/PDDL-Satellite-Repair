@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDDL Satellite Repair — Autonomous Logical Agent Visualizer</title>
+    <meta name="description" content="P21 Case Study: Interactive PDDL-based satellite repair planner visualizer demonstrating autonomous logical agents for multi-step repair scenarios.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- HEADER -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <header id="app-header">
+        <div class="header-glow"></div>
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="20" cy="20" r="18" stroke="url(#logoGrad)" stroke-width="2" fill="none"/>
+                        <path d="M20 8 L20 32 M8 20 L32 20" stroke="url(#logoGrad)" stroke-width="1.5" opacity="0.5"/>
+                        <circle cx="20" cy="20" r="4" fill="url(#logoGrad)"/>
+                        <ellipse cx="20" cy="20" rx="14" ry="6" stroke="url(#logoGrad)" stroke-width="1" fill="none" transform="rotate(30 20 20)"/>
+                        <ellipse cx="20" cy="20" rx="14" ry="6" stroke="url(#logoGrad)" stroke-width="1" fill="none" transform="rotate(-30 20 20)"/>
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40">
+                                <stop offset="0%" stop-color="#00d4ff"/>
+                                <stop offset="100%" stop-color="#7b2fff"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div>
+                    <h1>PDDL Satellite Repair</h1>
+                    <p class="subtitle">P21 — Autonomous Logical Agents | Basavaraj Babasab Billur</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-badge" id="solver-status">
+                    <span class="status-dot"></span>
+                    <span>Solver Ready</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- MAIN CONTENT -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <main id="app-main">
+        <!-- SCENARIO SELECTOR -->
+        <section class="scenario-selector glass-panel" id="scenario-section">
+            <h2 class="section-title"><span class="section-icon">🛰️</span> Select Repair Scenario</h2>
+            <div class="scenario-cards" id="scenario-cards">
+                <button class="scenario-card active" data-scenario="scenario1" id="btn-scenario1">
+                    <div class="card-number">01</div>
+                    <h3>Basic Repair</h3>
+                    <p>Single panel, one tool, clear debris</p>
+                    <div class="card-meta">
+                        <span>2 areas</span>
+                        <span>1 panel</span>
+                        <span>1 tool</span>
+                    </div>
+                </button>
+                <button class="scenario-card" data-scenario="scenario2" id="btn-scenario2">
+                    <div class="card-number">02</div>
+                    <h3>Multi-Panel</h3>
+                    <p>Three panels, three tools, complex routes</p>
+                    <div class="card-meta">
+                        <span>4 areas</span>
+                        <span>3 panels</span>
+                        <span>3 tools</span>
+                    </div>
+                </button>
+                <button class="scenario-card" data-scenario="scenario3" id="btn-scenario3">
+                    <div class="card-number">03</div>
+                    <h3>Complex Mission</h3>
+                    <p>Five panels, six areas, distributed tools</p>
+                    <div class="card-meta">
+                        <span>6 areas</span>
+                        <span>5 panels</span>
+                        <span>4 tools</span>
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- TWO-COLUMN LAYOUT -->
+        <div class="main-grid">
+            <!-- LEFT: SATELLITE VISUALIZATION -->
+            <section class="satellite-viz glass-panel" id="satellite-section">
+                <h2 class="section-title"><span class="section-icon">🌌</span> Satellite Schematic</h2>
+                <div class="satellite-container" id="satellite-container">
+                    <!-- SVG satellite is rendered by JS -->
+                </div>
+                <div class="viz-legend" id="viz-legend">
+                    <div class="legend-item"><span class="legend-dot robot"></span> Robot</div>
+                    <div class="legend-item"><span class="legend-dot debris"></span> Debris</div>
+                    <div class="legend-item"><span class="legend-dot tool"></span> Tool</div>
+                    <div class="legend-item"><span class="legend-dot panel-damaged"></span> Damaged</div>
+                    <div class="legend-item"><span class="legend-dot panel-repaired"></span> Repaired</div>
+                </div>
+            </section>
+
+            <!-- RIGHT: PLAN & CONTROLS -->
+            <section class="plan-panel glass-panel" id="plan-section">
+                <h2 class="section-title"><span class="section-icon">📋</span> Execution Plan</h2>
+
+                <!-- PLAYBACK CONTROLS -->
+                <div class="playback-controls" id="playback-controls">
+                    <button class="ctrl-btn" id="btn-reset" title="Reset">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+                    </button>
+                    <button class="ctrl-btn" id="btn-prev" title="Previous Step">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="19 20 9 12 19 4"/><line x1="5" y1="4" x2="5" y2="20"/></svg>
+                    </button>
+                    <button class="ctrl-btn primary" id="btn-play" title="Play/Pause">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="play-icon"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="pause-icon" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                    </button>
+                    <button class="ctrl-btn" id="btn-next" title="Next Step">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 4 15 12 5 20"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
+                    </button>
+                    <div class="speed-control">
+                        <label for="speed-slider">Speed</label>
+                        <input type="range" id="speed-slider" min="1" max="10" value="5">
+                    </div>
+                    <div class="step-counter" id="step-counter">Step 0 / 0</div>
+                </div>
+
+                <!-- STEP PROGRESS BAR -->
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+
+                <!-- CURRENT ACTION DISPLAY -->
+                <div class="current-action" id="current-action">
+                    <div class="action-icon" id="action-icon">⏸</div>
+                    <div class="action-text">
+                        <div class="action-name" id="action-name">Select a scenario to begin</div>
+                        <div class="action-desc" id="action-desc">The planner will generate an optimal sequence of actions</div>
+                    </div>
+                </div>
+
+                <!-- PLAN STEPS LIST -->
+                <div class="plan-steps-container" id="plan-steps-container">
+                    <div class="plan-steps" id="plan-steps">
+                        <!-- Steps rendered by JS -->
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- BOTTOM ROW: STATE + METRICS -->
+        <div class="bottom-grid">
+            <!-- STATE PANEL -->
+            <section class="state-panel glass-panel" id="state-section">
+                <h2 class="section-title"><span class="section-icon">🔮</span> World State (Predicates)</h2>
+                <div class="predicates-grid" id="predicates-grid">
+                    <!-- Predicates rendered by JS -->
+                </div>
+            </section>
+
+            <!-- METRICS PANEL -->
+            <section class="metrics-panel glass-panel" id="metrics-section">
+                <h2 class="section-title"><span class="section-icon">📊</span> Plan Analysis</h2>
+                <div class="metrics-grid" id="metrics-grid">
+                    <!-- Metrics rendered by JS -->
+                </div>
+                <div class="chart-container" id="chart-container">
+                    <canvas id="action-chart"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <!-- WORKFLOW DIAGRAM -->
+        <section class="workflow-section glass-panel" id="workflow-section">
+            <h2 class="section-title"><span class="section-icon">🔄</span> System Workflow & Architecture</h2>
+            <div class="workflow-tabs">
+                <button class="workflow-tab active" data-tab="pddl-workflow" id="tab-pddl-workflow">PDDL Planning Workflow</button>
+                <button class="workflow-tab" data-tab="integration-workflow" id="tab-integration">P21↔P22↔P29 Integration</button>
+                <button class="workflow-tab" data-tab="state-transitions" id="tab-state-transitions">State Transitions</button>
+            </div>
+            <div class="workflow-content" id="workflow-content">
+                <!-- Workflow diagrams rendered by JS -->
+            </div>
+        </section>
+
+        <!-- PDDL CODE VIEWER -->
+        <section class="code-section glass-panel" id="code-section">
+            <h2 class="section-title"><span class="section-icon">💻</span> PDDL Source Code</h2>
+            <div class="code-tabs">
+                <button class="code-tab active" data-code="domain" id="tab-domain">Domain File</button>
+                <button class="code-tab" data-code="problem" id="tab-problem">Problem File</button>
+                <button class="code-tab" data-code="solution" id="tab-solution">Solution</button>
+            </div>
+            <div class="code-viewer" id="code-viewer">
+                <pre><code id="code-content"></code></pre>
+            </div>
+        </section>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- FOOTER -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <footer id="app-footer">
+        <p>P21 — Logical Agents (PDDL) | AI in Autonomous Systems | Basavaraj Babasab Billur</p>
+        <p class="footer-sub">Case Study: Autonomous Satellite Repair using PDDL Planning</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
